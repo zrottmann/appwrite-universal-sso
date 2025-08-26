@@ -1,0 +1,61 @@
+name: Deploy to Appwrite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+        cache-dependency-path: 'functions/sso-auth/package-lock.json'
+    
+    - name: Install dependencies
+      run: |
+        cd functions/sso-auth
+        npm ci
+    
+    - name: Run tests
+      run: |
+        cd functions/sso-auth
+        npm test
+    
+    - name: Install Appwrite CLI
+      run: npm install -g appwrite-cli
+    
+    - name: Deploy to Appwrite
+      if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+      env:
+        APPWRITE_CLI_KEY: ${{ secrets.APPWRITE_CLI_KEY }}
+        APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+        APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+      run: |
+        echo "Setting up Appwrite CLI..."
+        appwrite client --endpoint $APPWRITE_ENDPOINT
+        appwrite client --project $APPWRITE_PROJECT_ID
+        appwrite client --key $APPWRITE_CLI_KEY
+        
+        echo "Deploying function..."
+        appwrite deploy function --function-id sso-auth
+        
+        echo "Deployment completed!"
+
+    - name: Deployment Status
+      if: always()
+      run: |
+        if [ ${{ job.status }} == 'success' ]; then
+          echo "✅ Deployment successful!"
+        else
+          echo "❌ Deployment failed!"
+        fi

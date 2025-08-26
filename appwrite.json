@@ -1,0 +1,121 @@
+{
+  "projectId": "",
+  "projectName": "Universal SSO Authentication",
+  "functions": [
+    {
+      "id": "sso-auth",
+      "name": "Universal SSO Authentication",
+      "runtime": "node-18.0",
+      "source": "./functions/sso-auth",
+      "entrypoint": "index.js",
+      "timeout": 30,
+      "memory": 256,
+      "environment": "production",
+      "variables": {
+        "APPWRITE_PROJECT_ID": "",
+        "APPWRITE_API_KEY": "",
+        "SSO_SECRET_KEY": "",
+        "ALLOWED_DOMAINS": "localhost:3000,*.yourdomain.com",
+        "GOOGLE_CLIENT_ID": "",
+        "GOOGLE_CLIENT_SECRET": ""
+      },
+      "events": [],
+      "schedule": "",
+      "logging": true,
+      "scopes": ["users.read", "users.write", "databases.read", "databases.write"]
+    }
+  ],
+  "databases": [
+    {
+      "id": "sso",
+      "name": "SSO Database",
+      "collections": [
+        {
+          "id": "rate_limits",
+          "name": "Rate Limits",
+          "permissions": [],
+          "attributes": [
+            {
+              "key": "ip",
+              "type": "string",
+              "size": 255,
+              "required": true
+            },
+            {
+              "key": "requests",
+              "type": "integer",
+              "required": true,
+              "array": true
+            }
+          ],
+          "indexes": [
+            {
+              "key": "ip_index",
+              "type": "key",
+              "attributes": ["ip"]
+            }
+          ]
+        },
+        {
+          "id": "activity_logs",
+          "name": "Activity Logs",
+          "permissions": [],
+          "attributes": [
+            {
+              "key": "action",
+              "type": "string",
+              "size": 255,
+              "required": true
+            },
+            {
+              "key": "userId",
+              "type": "string",
+              "size": 255,
+              "required": false
+            },
+            {
+              "key": "clientIP",
+              "type": "string",
+              "size": 255,
+              "required": true
+            },
+            {
+              "key": "userAgent",
+              "type": "string",
+              "size": 500,
+              "required": false
+            },
+            {
+              "key": "timestamp",
+              "type": "datetime",
+              "required": true
+            },
+            {
+              "key": "error",
+              "type": "string",
+              "size": 1000,
+              "required": false
+            }
+          ],
+          "indexes": [
+            {
+              "key": "action_index",
+              "type": "key",
+              "attributes": ["action"]
+            },
+            {
+              "key": "user_index",
+              "type": "key",
+              "attributes": ["userId"]
+            },
+            {
+              "key": "timestamp_index",
+              "type": "key",
+              "attributes": ["timestamp"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
